@@ -1,7 +1,3 @@
-"""
-Pruebas Unitarias para el Optimizador de Columnas de Concreto Armado.
-"""
-
 import pytest
 import numpy as np
 import pandas as pd
@@ -43,7 +39,6 @@ def test_calculo_acero():
     H = 3.00
     cuantia = 0.02
     peso = calcular_acero_columna(ag, H, cuantia)
-    # peso = (0.02 * 0.20) * 3.00 * 7850 * 1.15 * 1.25
     esperado = (0.02 * 0.20) * 3.00 * 7850.0 * 1.15 * 1.25
     assert np.isclose(peso, esperado)
 
@@ -55,9 +50,9 @@ def test_parametros_fc():
 
 
 def test_optimizacion_resistencia_estructural():
-    pu = 1200.0  # kN
-    fc = 280     # kg/cm²
-    H = 3.00     # m
+    pu = 1200.0
+    fc = 280
+    H = 3.00
     resultado = optimizar_columna_individual(
         tipo_seccion="rectangular",
         altura_h=H,
@@ -66,12 +61,9 @@ def test_optimizacion_resistencia_estructural():
         b_actual=0.50,
         h_actual=0.50
     )
-    # La capacidad resistente nominal reducida phi*Pn debe ser mayor o igual a Pu
     assert resultado["phi_Pn_capacidad_kN"] >= pu
-    # Las dimensiones deben ser factibles (>= 0.25 m)
     assert resultado["b_opt_m"] >= 0.25
     assert resultado["h_opt_m"] >= 0.25
-    # La cuantía debe estar en rango ACI [1%, 4%]
     assert 0.01 <= resultado["cuantia_opt"] <= 0.04
 
 
@@ -106,8 +98,8 @@ def test_flujo_dataframe_completo():
     assert len(df_log) == 1
     assert df_log["total_viajes_mixer"].iloc[0] >= 1
 
+
 def test_calculo_columna_cli():
-    # Test column C-501
     ag, vol, enc = calcular_geometria_columna("rectangular", 0.40, 0.50, 3.20)
     opt = optimizar_columna_individual("rectangular", 3.20, 1100.0, 280, 0.40, 0.50)
     assert opt["phi_Pn_capacidad_kN"] >= 1100.0

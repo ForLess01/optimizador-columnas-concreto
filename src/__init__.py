@@ -1,7 +1,3 @@
-"""
-Paquete de Optimización de Volúmenes y Procesos de Columnas en Ingeniería Civil.
-"""
-
 from .calculo_volumen import (
     calcular_geometria_columna,
     calcular_acero_columna,

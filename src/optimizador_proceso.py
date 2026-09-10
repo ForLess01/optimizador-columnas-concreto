@@ -1,9 +1,3 @@
-"""
-Módulo de Optimización de Proceso Estructural y Costos de Columnas.
-Utiliza NumPy para evaluar mallas vectorizadas de combinaciones dimensionales y cuantías,
-encontrando la solución de mínimo costo que satisface los requerimientos del ACI 318 / E.060.
-"""
-
 from typing import Dict, Any
 import numpy as np
 import pandas as pd
@@ -25,47 +19,32 @@ def optimizar_columna_individual(
     b_actual: float,
     h_actual: float
 ) -> Dict[str, Any]:
-    """
-    Optimiza las dimensiones (b, h o Diámetro) y la cuantía de acero para una columna,
-    minimizando el costo total y volumen respetando la capacidad nominal ACI 318.
-    
-    Aplica NumPy para la generación de mallas y cálculo vectorial masivo.
-    """
     fc_params = obtener_parametros_fc(fc_kg_cm2)
     costo_conc_m3 = fc_params["costo_concreto_m3"]
     co2_conc_m3 = fc_params["co2_kg_m3"]
     
-    # Conversión de unidades a Sistema Internacional consistente (kN y metros)
-    # f'c en kPa (1 kg/cm² = 98.0665 kPa)
     fc_kpa = fc_kg_cm2 * 98.0665
-    fy_kpa = 420000.0  # Acero Grado 60: 420 MPa = 420,000 kPa
+    fy_kpa = 420000.0
 
     tipo = str(tipo_seccion).strip().lower()
 
     if tipo == "circular":
-        # Factores ACI para columnas con zunchos/espirales
         phi = 0.75
         alpha = 0.85
-        diametros = np.arange(0.25, 1.25, 0.05)  # Pasos constructivos de 5 cm
-        cuantias = np.arange(0.01, 0.036, 0.002) # 1% a 3.5%
+        diametros = np.arange(0.25, 1.25, 0.05)
+        cuantias = np.arange(0.01, 0.036, 0.002)
         
-        # Malla 2D con NumPy
         D_grid, rho_grid = np.meshgrid(diametros, cuantias)
         D_flat = D_grid.flatten()
         rho_flat = rho_grid.flatten()
 
-        # Ag y Ast
         ag_flat = (np.pi / 4.0) * (D_flat ** 2)
         ast_flat = rho_flat * ag_flat
 
-        # Capacidad nominal resistente axial ACI 318: phi * Pn (kN)
         phi_pn = phi * alpha * (0.85 * fc_kpa * (ag_flat - ast_flat) + fy_kpa * ast_flat)
-
-        # Filtro de factibilidad estructural: phi * Pn >= Pu
         mascara_valida = phi_pn >= pu_kn
         
         if not np.any(mascara_valida):
-            # Si no converge en rango, mantener dimensiones actuales
             d_opt, rho_opt = b_actual, 0.025
         else:
             D_valid = D_flat[mascara_valida]
@@ -78,7 +57,6 @@ def optimizar_columna_individual(
             enc_valid = perimetro_valid * altura_h
             acero_kg_valid = ast_valid * altura_h * DENSIDAD_ACERO_KG_M3 * 1.15 * 1.25
 
-            # Función de Costo Total
             costo_valid = (
                 vol_valid * costo_conc_m3 +
                 acero_kg_valid * COSTO_ACERO_KG +
@@ -92,22 +70,18 @@ def optimizar_columna_individual(
         b_opt, h_opt = d_opt, d_opt
 
     else:
-        # Factores ACI para columnas con estribos
         phi = 0.65
         alpha = 0.80
 
-        # Rango dimensional constructivo: múltiplos de 5 cm entre 25 cm y 100 cm
         b_vals = np.arange(0.25, 1.05, 0.05)
         h_vals = np.arange(0.25, 1.05, 0.05)
         rho_vals = np.arange(0.01, 0.036, 0.002)
 
-        # Malla tridimensional vectorizada con NumPy
         B_grid, H_grid, RHO_grid = np.meshgrid(b_vals, h_vals, rho_vals, indexing="ij")
         B_flat = B_grid.flatten()
         H_flat = H_grid.flatten()
         RHO_flat = RHO_grid.flatten()
 
-        # Restricción de relación de aspecto 0.6 <= b/h <= 1.67
         aspect_ratio = B_flat / H_flat
         mascara_aspecto = (aspect_ratio >= 0.6) & (aspect_ratio <= 1.67)
 
@@ -146,7 +120,6 @@ def optimizar_columna_individual(
             h_opt = float(H_valid[idx_opt])
             rho_opt = float(RHO_valid[idx_opt])
 
-    # Propiedades de la solución óptima
     ag_opt, vol_opt, enc_opt = calcular_geometria_columna(tipo, b_opt, h_opt, altura_h)
     acero_opt = calcular_acero_columna(ag_opt, altura_h, rho_opt)
     
@@ -158,7 +131,6 @@ def optimizar_columna_individual(
 
     co2_opt = (vol_opt * co2_conc_m3) + (acero_opt * CO2_ACERO_KG)
 
-    # Capacidad resistente final de la sección optimizada
     ast_final = rho_opt * ag_opt
     if tipo == "circular":
         phi_pn_final = 0.75 * 0.85 * (0.85 * fc_kpa * (ag_opt - ast_final) + fy_kpa * ast_final)
@@ -180,10 +152,6 @@ def optimizar_columna_individual(
 
 
 def ejecutar_optimizacion_dataset(df_inicial: pd.DataFrame) -> pd.DataFrame:
-    """
-    Ejecuta el proceso de optimización para todo el DataFrame de columnas
-    y consolida métricas de ahorro de volumen, costo y huella ambiental.
-    """
     df = df_inicial.copy()
     resultados_opt = []
 
@@ -201,7 +169,6 @@ def ejecutar_optimizacion_dataset(df_inicial: pd.DataFrame) -> pd.DataFrame:
     df_opt = pd.DataFrame(resultados_opt)
     df_combinado = pd.concat([df.reset_index(drop=True), df_opt], axis=1)
 
-    # Métricas de optimización usando operaciones vectorizadas con NumPy y Pandas
     v_ini = df_combinado["volumen_inicial_m3"].values
     v_opt = df_combinado["volumen_opt_m3"].values
     c_ini = df_combinado["costo_inicial_usd"].values

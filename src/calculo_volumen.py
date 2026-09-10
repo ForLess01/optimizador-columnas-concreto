@@ -1,8 +1,3 @@
-"""
-Módulo de Cálculo Geométrico y Volumétrico de Columnas de Concreto Armado.
-Aplica NumPy y Pandas para cuantificación geométrica y cálculo de acero inicial.
-"""
-
 from typing import Tuple
 import numpy as np
 import pandas as pd
@@ -21,10 +16,6 @@ def calcular_geometria_columna(
     h: float,
     H: float
 ) -> Tuple[float, float, float]:
-    """
-    Calcula área de sección transversal (Ag en m²), volumen (V en m³)
-    y área de encofrado lateral (A_enc en m²).
-    """
     tipo = str(tipo_seccion).strip().lower()
     if tipo == "circular":
         diametro = b
@@ -33,7 +24,7 @@ def calcular_geometria_columna(
         volumen = ag * H
         perimetro = np.pi * diametro
         area_encofrado = perimetro * H
-    else:  # rectangular o cuadrada
+    else:
         ag = b * h
         volumen = ag * H
         perimetro = 2.0 * (b + h)
@@ -47,21 +38,13 @@ def calcular_acero_columna(
     altura_m: float,
     cuantia: float
 ) -> float:
-    """
-    Calcula el peso total estimado de acero de refuerzo (kg).
-    Incluye acero longitudinal más estribos y ganchos (factor 1.15 por traslapes, 1.25 por estribos).
-    """
     area_acero_m2 = cuantia * ag_m2
     peso_longitudinal = area_acero_m2 * altura_m * DENSIDAD_ACERO_KG_M3 * 1.15
-    peso_total = peso_longitudinal * 1.25  # Inclusión de estribos y ganchos
+    peso_total = peso_longitudinal * 1.25
     return float(peso_total)
 
 
 def calcular_propiedades_iniciales(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Procesa el DataFrame de entrada calculando volúmenes, áreas de encofrado,
-    peso de acero inicial, costos y huella de carbono usando NumPy y Pandas.
-    """
     df_out = df.copy()
 
     ags = []
@@ -71,7 +54,6 @@ def calcular_propiedades_iniciales(df: pd.DataFrame) -> pd.DataFrame:
     costos_totales = []
     co2_totales = []
 
-    # Iteración vectorial / por filas procesada con NumPy
     for _, fila in df_out.iterrows():
         ag, vol, a_enc = calcular_geometria_columna(
             fila["tipo_seccion"],
