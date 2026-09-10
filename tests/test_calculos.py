@@ -104,3 +104,22 @@ def test_calculo_columna_cli():
     opt = optimizar_columna_individual("rectangular", 3.20, 1100.0, 280, 0.40, 0.50)
     assert opt["phi_Pn_capacidad_kN"] >= 1100.0
     assert opt["volumen_opt_m3"] < vol
+
+
+def test_lectura_escritura_excel(tmp_path):
+    archivo_excel = tmp_path / "test_columnas.xlsx"
+    df_prueba = pd.DataFrame([{
+        "columna_id": "C-99",
+        "nivel": "Piso 1",
+        "tipo_seccion": "rectangular",
+        "b_m": 0.45,
+        "h_m": 0.45,
+        "altura_H_m": 3.00,
+        "carga_axial_Pu_kN": 900.0,
+        "fc_kg_cm2": 210,
+        "cuantia_inicial": 0.02
+    }])
+    df_prueba.to_excel(archivo_excel, index=False)
+    df_leido = pd.read_excel(archivo_excel)
+    assert len(df_leido) == 1
+    assert df_leido["columna_id"].iloc[0] == "C-99"

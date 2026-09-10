@@ -7,6 +7,7 @@ Calculo volumetrico, optimizacion de secciones de concreto armado y estimacion d
 - Python 3.10+
 - numpy
 - pandas
+- openpyxl
 - tabulate
 - pytest
 
@@ -25,9 +26,9 @@ optimizador-columnas-concreto/
 ├── pytest.ini
 ├── README.md
 ├── data/
-│   ├── columnas_entrada.csv
-│   ├── columnas_optimizadas.csv
-│   └── resumen_vaciado_concreto.csv
+│   ├── columnas_entrada.xlsx
+│   ├── columnas_optimizadas.xlsx
+│   └── resumen_vaciado_concreto.xlsx
 ├── src/
 │   ├── __init__.py
 │   ├── calculo_volumen.py
@@ -40,17 +41,17 @@ optimizador-columnas-concreto/
 
 ## Uso
 
-### Procesar archivo CSV completo
+### Procesar archivo Excel completo
 
-Ejecuta el analisis de todas las columnas listadas en `data/columnas_entrada.csv`, calcula volumenes, optimiza las secciones de acuerdo con la capacidad resistente axial y genera los reportes en CSV:
+Ejecuta el analisis de todas las columnas listadas en `data/columnas_entrada.xlsx`, calcula volumenes, optimiza las secciones de acuerdo con la capacidad resistente axial y genera los reportes en Excel:
 
 ```bash
 python main.py
 ```
 
 Archivos generados:
-- `data/columnas_optimizadas.csv`: dimensiones optimas, volumenes, cuantias de acero y ahorro economico.
-- `data/resumen_vaciado_concreto.csv`: volumen acumulado por nivel y conteo de camiones mixer de 8 m3.
+- `data/columnas_optimizadas.xlsx`: dimensiones optimas, volumenes, cuantias de acero y ahorro economico.
+- `data/resumen_vaciado_concreto.xlsx`: volumen acumulado por nivel y conteo de camiones mixer de 8 m3.
 
 ### Calculo de una columna por linea de comandos
 
@@ -60,7 +61,7 @@ Permite calcular el volumen y la seccion recomendada para una columna individual
 python main.py --columna C-101 --b 0.40 --h 0.50 --altura 3.00 --pu 1200 --fc 280
 ```
 
-Para guardarla en el archivo de entrada:
+Para guardarla en el archivo Excel de entrada:
 
 ```bash
 python main.py --columna C-101 --b 0.40 --h 0.50 --altura 3.00 --pu 1200 --fc 280 --guardar

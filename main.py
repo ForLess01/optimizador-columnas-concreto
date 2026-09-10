@@ -23,14 +23,14 @@ from src.dosificacion import (
 
 DIRECTORIO_ACTUAL = os.path.dirname(os.path.abspath(__file__))
 RUTA_DATOS = os.path.join(DIRECTORIO_ACTUAL, "data")
-RUTA_CSV_ENTRADA = os.path.join(RUTA_DATOS, "columnas_entrada.csv")
-RUTA_CSV_SALIDA = os.path.join(RUTA_DATOS, "columnas_optimizadas.csv")
-RUTA_CSV_LOGISTICA = os.path.join(RUTA_DATOS, "resumen_vaciado_concreto.csv")
+RUTA_EXCEL_ENTRADA = os.path.join(RUTA_DATOS, "columnas_entrada.xlsx")
+RUTA_EXCEL_SALIDA = os.path.join(RUTA_DATOS, "columnas_optimizadas.xlsx")
+RUTA_EXCEL_LOGISTICA = os.path.join(RUTA_DATOS, "resumen_vaciado_concreto.xlsx")
 
 
 def asegurar_datos_ejemplo():
     os.makedirs(RUTA_DATOS, exist_ok=True)
-    if not os.path.exists(RUTA_CSV_ENTRADA):
+    if not os.path.exists(RUTA_EXCEL_ENTRADA):
         datos_base = {
             "columna_id": ["C-101", "C-102", "C-103", "C-104", "C-201", "C-202", "C-203", "C-204", "C-301", "C-302", "C-303", "C-304"],
             "nivel": ["Piso 1", "Piso 1", "Piso 1", "Piso 1", "Piso 2", "Piso 2", "Piso 2", "Piso 2", "Piso 3", "Piso 3", "Piso 3", "Piso 3"],
@@ -43,26 +43,26 @@ def asegurar_datos_ejemplo():
             "cuantia_inicial": [0.025, 0.025, 0.020, 0.020, 0.025, 0.025, 0.020, 0.020, 0.020, 0.020, 0.015, 0.018]
         }
         df_base = pd.DataFrame(datos_base)
-        df_base.to_csv(RUTA_CSV_ENTRADA, index=False)
+        df_base.to_excel(RUTA_EXCEL_ENTRADA, index=False)
 
 
-def procesar_flujo_completo(ruta_csv: str = RUTA_CSV_ENTRADA):
+def procesar_flujo_completo(ruta_excel: str = RUTA_EXCEL_ENTRADA):
     print("=" * 80)
     print("  CALCULO Y OPTIMIZACION DE COLUMNAS DE CONCRETO")
     print("=" * 80)
-    df_entrada = pd.read_csv(ruta_csv)
-    print(f"Cargadas {len(df_entrada)} columnas desde {ruta_csv}\n")
+    df_entrada = pd.read_excel(ruta_excel)
+    print(f"Cargadas {len(df_entrada)} columnas desde {ruta_excel}\n")
 
     df_calculado = calcular_propiedades_iniciales(df_entrada)
     df_opt = ejecutar_optimizacion_dataset(df_calculado)
     df_opt = cuantificar_materiales(df_opt, sufijo_volumen="volumen_opt_m3")
 
-    df_opt.to_csv(RUTA_CSV_SALIDA, index=False)
-    print(f"Resultados guardados en: {RUTA_CSV_SALIDA}")
+    df_opt.to_excel(RUTA_EXCEL_SALIDA, index=False)
+    print(f"Resultados guardados en: {RUTA_EXCEL_SALIDA}")
 
     df_logistica = optimizar_logistica_vaciado(df_opt, columna_volumen="volumen_opt_m3")
-    df_logistica.to_csv(RUTA_CSV_LOGISTICA, index=False)
-    print(f"Resumen logistico guardado en: {RUTA_CSV_LOGISTICA}\n")
+    df_logistica.to_excel(RUTA_EXCEL_LOGISTICA, index=False)
+    print(f"Resumen logistico guardado en: {RUTA_EXCEL_LOGISTICA}\n")
 
     vol_ini_total = df_opt["volumen_inicial_m3"].sum()
     vol_opt_total = df_opt["volumen_opt_m3"].sum()
@@ -125,7 +125,7 @@ def calcular_columna_individual_cli(
     H: float,
     pu: float,
     fc: int,
-    agregar_al_csv: bool = False
+    agregar_al_excel: bool = False
 ):
     print("\n" + "=" * 70)
     print(f"  CALCULO INDIVIDUAL DE COLUMNA: {col_id}")
@@ -168,7 +168,7 @@ def calcular_columna_individual_cli(
     print(f"  Ahorro                  : ${ahorro_costo:.2f} USD ({porc_ahorro:.1f}%)")
     print("=" * 70)
 
-    if agregar_al_csv:
+    if agregar_al_excel:
         nueva_fila = {
             "columna_id": col_id,
             "nivel": "Personalizado",
@@ -180,10 +180,10 @@ def calcular_columna_individual_cli(
             "fc_kg_cm2": fc,
             "cuantia_inicial": cuantia_def
         }
-        df_actual = pd.read_csv(RUTA_CSV_ENTRADA)
+        df_actual = pd.read_excel(RUTA_EXCEL_ENTRADA)
         df_actual = pd.concat([df_actual, pd.DataFrame([nueva_fila])], ignore_index=True)
-        df_actual.to_csv(RUTA_CSV_ENTRADA, index=False)
-        print(f"Columna {col_id} agregada a {RUTA_CSV_ENTRADA}.\n")
+        df_actual.to_excel(RUTA_EXCEL_ENTRADA, index=False)
+        print(f"Columna {col_id} agregada a {RUTA_EXCEL_ENTRADA}.\n")
 
 
 def modo_interactivo():
@@ -202,15 +202,15 @@ def modo_interactivo():
     pu = float(input("Carga axial Pu en kN (ej. 1200): "))
     fc = int(input("Resistencia f'c en kg/cm2 (210, 280, 350) [def: 210]: ") or "210")
     
-    resp_guardar = input("Guardar en CSV? (s/n) [def: s]: ").strip().lower()
+    resp_guardar = input("Guardar en Excel? (s/n) [def: s]: ").strip().lower()
     guardar = resp_guardar != "n"
 
-    calcular_columna_individual_cli(col_id, seccion, b, h, H, pu, fc, agregar_al_csv=guardar)
+    calcular_columna_individual_cli(col_id, seccion, b, h, H, pu, fc, agregar_al_excel=guardar)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Calculo de volumen y optimizacion de columnas de concreto")
-    parser.add_argument("--archivo", type=str, default=RUTA_CSV_ENTRADA, help="Ruta al archivo CSV de entrada")
+    parser.add_argument("--archivo", type=str, default=RUTA_EXCEL_ENTRADA, help="Ruta al archivo Excel de entrada")
     parser.add_argument("--interactivo", action="store_true", help="Modo interactivo en terminal")
     parser.add_argument("--columna", type=str, help="ID de columna")
     parser.add_argument("--seccion", type=str, default="rectangular", choices=["rectangular", "circular"], help="Tipo de seccion")
@@ -219,7 +219,7 @@ def main():
     parser.add_argument("--altura", type=float, help="Altura H (m)")
     parser.add_argument("--pu", type=float, default=1000.0, help="Carga axial Pu (kN)")
     parser.add_argument("--fc", type=int, default=210, help="Resistencia f'c (kg/cm2)")
-    parser.add_argument("--guardar", action="store_true", help="Guardar columna en el CSV")
+    parser.add_argument("--guardar", action="store_true", help="Guardar columna en el archivo Excel")
 
     args = parser.parse_args()
 
@@ -230,7 +230,7 @@ def main():
     elif args.columna and args.b and args.altura:
         h_val = args.h if args.h else args.b
         calcular_columna_individual_cli(
-            args.columna, args.seccion, args.b, h_val, args.altura, args.pu, args.fc, agregar_al_csv=args.guardar
+            args.columna, args.seccion, args.b, h_val, args.altura, args.pu, args.fc, agregar_al_excel=args.guardar
         )
     else:
         procesar_flujo_completo(args.archivo)
