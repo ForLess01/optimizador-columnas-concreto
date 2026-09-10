@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Graphify & Temporary
+graphify-out/
+.graphify/
+graph.html
+graph.json
+GRAPH_REPORT.md
+
+# OS
+.DS_Store
+Thumbs.db

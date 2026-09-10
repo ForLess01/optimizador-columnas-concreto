@@ -1,0 +1,13 @@
+columna_id,nivel,tipo_seccion,b_m,h_m,altura_H_m,carga_axial_Pu_kN,fc_kg_cm2,cuantia_inicial
+C-101,Piso 1,rectangular,0.60,0.60,3.20,1650.0,280,0.025
+C-102,Piso 1,rectangular,0.55,0.70,3.20,2100.0,280,0.025
+C-103,Piso 1,rectangular,0.50,0.50,3.20,1200.0,280,0.020
+C-104,Piso 1,circular,0.60,0.60,3.20,1400.0,280,0.020
+C-201,Piso 2,rectangular,0.55,0.55,3.00,1250.0,210,0.025
+C-202,Piso 2,rectangular,0.50,0.65,3.00,1600.0,210,0.025
+C-203,Piso 2,rectangular,0.45,0.45,3.00,850.0,210,0.020
+C-204,Piso 2,circular,0.55,0.55,3.00,1050.0,210,0.020
+C-301,Piso 3,rectangular,0.50,0.50,2.80,800.0,210,0.020
+C-302,Piso 3,rectangular,0.45,0.55,2.80,1050.0,210,0.020
+C-303,Piso 3,rectangular,0.40,0.40,2.80,550.0,210,0.015
+C-304,Piso 3,circular,0.50,0.50,2.80,700.0,210,0.018
